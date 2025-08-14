@@ -1,0 +1,7 @@
+# 在项目根目录执行以下命令安装依赖
+npm install crypto-js pg
+
+# 确保package-lock.json或yarn.lock被提交到Git
+git add package.json package-lock.json
+git commit -m "添加crypto-js和pg依赖"
+git push
