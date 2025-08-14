@@ -1,8 +1,0 @@
-{
-  "name": "graduate-tracker",
-  "version": "1.0.0",
-  "dependencies": {
-    "crypto-js": "^4.2.0",
-    "pg": "^8.11.3"
-  }
-}
