@@ -7,9 +7,9 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 配置数据库连接 - 适配Netlify Neon扩展
+// 配置数据库连接 - 直接使用环境变量
 const pool = new Pool({
-  connectionString: process.env.NETLIFY_NEON_DATABASE_URL || process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 

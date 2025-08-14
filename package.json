@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Build complete'"
+    "build": "echo 'No build needed'"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -15,11 +15,10 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@netlify/plugin-neon": "^0.2.0",
     "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"  // 修改为与Netlify兼容的Node版本
   }
 }
     

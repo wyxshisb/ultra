@@ -3,7 +3,7 @@
   publish = "public"
 
 [dev]
-  command = "npm run dev"
+  command = "npm start"
   port = 3000
 
 [[redirects]]
@@ -14,6 +14,5 @@
 [functions]
   node_bundler = "esbuild"
 
-[[plugins]]
-  package = "@netlify/plugin-neon"
+# 移除@netlify/plugin-neon插件配置，因为该版本不存在
     
