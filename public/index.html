@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中毕业生去向查询</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // 配置Tailwind自定义颜色和字体
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-neutral">
+    <!-- 页面加载动画 -->
+    <div id="loader" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="flex flex-col items-center">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-primary font-medium">加载中...</p>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container mx-auto px-4 py-8 max-w-4xl hidden" id="app-container">
+        <!-- 头部 -->
+        <header class="text-center mb-12">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-neutral mb-3">
+                高中毕业生去向查询
+            </h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                登记你的毕业去向，或查询同学的升学与就业信息
+            </p>
+        </header>
+
+        <!-- 消息提示框 -->
+        <div id="message" class="fixed top-4 right-4 p-4 rounded-lg shadow-lg transform transition-all duration-500 translate-x-full z-40 max-w-xs"></div>
+
+        <!-- 主菜单 -->
+        <section id="main-menu" class="text-center mb-16">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="register-btn">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-pencil text-2xl text-primary"></i>
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">我要登记</h2>
+                    <p class="text-gray-600">登记你的毕业信息和去向，设置查询问题</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="search-btn">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-search text-2xl text-secondary"></i>
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">我要查询</h2>
+                    <p class="text-gray-600">查询已登记的毕业生去向信息</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 登记表单 -->
+        <section id="register-form" class="hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
+            <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息登记</h2>
+            
+            <form id="registration-form">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
+                        <input type="text" id="name" name="name" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    
+                    <div>
+                        <label for="school" class="block text-sm font-medium text-gray-700 mb-1">毕业学校 <span class="text-red-500">*</span></label>
+                        <input type="text" id="school" name="school" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    
+                    <div>
+                        <label for="year" class="block text-sm font-medium text-gray-700 mb-1">毕业年份 <span class="text-red-500">*</span></label>
+                        <input type="number" id="year" name="year" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    
+                    <div>
+                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">去向 <span class="text-red-500">*</span></label>
+                        <input type="text" id="destination" name="destination" required
+                            placeholder="例如：北京大学 计算机系"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="question" class="block text-sm font-medium text-gray-700 mb-1">查询问题 <span class="text-red-500">*</span></label>
+                    <input type="text" id="question" name="question" required
+                        placeholder="设置一个问题，用于验证查询者身份"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                </div>
+                
+                <div class="mb-8">
+                    <label for="answer" class="block text-sm font-medium text-gray-700 mb-1">问题答案 <span class="text-red-500">*</span></label>
+                    <input type="text" id="answer" name="answer" required
+                        placeholder="设置上述问题的答案"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button type="button" id="back-from-register" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                        返回
+                    </button>
+                    <button type="submit" 
+                        class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
+                        提交登记
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 查询表单 -->
+        <section id="search-form" class="hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
+            <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息查询</h2>
+            
+            <div id="name-search-step">
+                <div class="mb-6">
+                    <label for="search-name" class="block text-sm font-medium text-gray-700 mb-1">请输入要查询的姓名 <span class="text-red-500">*</span></label>
+                    <input type="text" id="search-name" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button type="button" id="back-from-search" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                        返回
+                    </button>
+                    <button type="button" id="submit-search" 
+                        class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
+                        查找
+                    </button>
+                </div>
+            </div>
+            
+            <div id="question-step" class="hidden">
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 mb-3">请回答以下问题以验证身份：</p>
+                    <p id="question-display" class="text-lg font-medium mb-4 p-4 bg-gray-50 rounded-lg"></p>
+                    <input type="text" id="answer-input" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
+                    <input type="hidden" id="graduate-id">
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button type="button" id="back-to-name-search" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                        返回
+                    </button>
+                    <button type="button" id="submit-answer" 
+                        class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
+                        提交答案
+                    </button>
+                </div>
+            </div>
+            
+           
