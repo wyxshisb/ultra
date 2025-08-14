@@ -3,32 +3,58 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
+const compression = require('compression'); // 启用压缩
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 配置数据库连接
+// 启用Gzip压缩
+app.use(compression());
+
+// 配置数据库连接池
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20, // 连接池最大连接数
+  idleTimeoutMillis: 30000 // 连接空闲超时时间
 });
 
-// 中间件
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// 中间件优化
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGIN : '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
+app.use(express.json({ limit: '10kb' })); // 限制请求体大小
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '30d',
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  }
+}));
 
-// API端点 - 登记毕业生信息
+// API响应缓存
+const apiCache = new Map();
+const CACHE_TTL = 30000; // 缓存30秒
+
+// 登记毕业生信息
 app.post('/api/register', async (req, res) => {
   try {
     const { name, school, year, destination, question, answer } = req.body;
     
-    // 检查是否已存在相同姓名的记录
+    // 输入验证
+    if (!name || !school || !year || !destination || !question || !answer) {
+      return res.status(400).json({ message: '请填写所有必填字段' });
+    }
+    
+    // 检查重复姓名
     const checkQuery = 'SELECT * FROM graduates WHERE name = $1';
     const checkResult = await pool.query(checkQuery, [name]);
     
     if (checkResult.rows.length > 0) {
-      return res.status(400).json({ message: '该姓名已登记，请使用其他姓名或联系管理员' });
+      return res.status(400).json({ message: '该姓名已登记，请使用其他姓名' });
     }
     
     // 插入新记录
@@ -40,6 +66,9 @@ app.post('/api/register', async (req, res) => {
     const values = [name, school, year, destination, question, answer];
     const result = await pool.query(query, values);
     
+    // 清除相关缓存
+    apiCache.delete(`search:${name}`);
+    
     res.status(201).json({ 
       message: '信息登记成功！', 
       data: result.rows[0] 
@@ -50,11 +79,24 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// API端点 - 查找毕业生
+// 查找毕业生（带缓存）
 app.get('/api/search', async (req, res) => {
   try {
     const { name } = req.query;
     
+    if (!name) {
+      return res.status(400).json({ message: '请提供查询姓名' });
+    }
+    
+    // 检查缓存
+    const cacheKey = `search:${name}`;
+    const cachedData = apiCache.get(cacheKey);
+    
+    if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
+      return res.json(cachedData.data);
+    }
+    
+    // 数据库查询
     const query = 'SELECT id, name, question FROM graduates WHERE name = $1';
     const result = await pool.query(query, [name]);
     
@@ -62,20 +104,31 @@ app.get('/api/search', async (req, res) => {
       return res.status(404).json({ message: '该人并未入库' });
     }
     
-    res.json({ 
+    // 存入缓存
+    const responseData = { 
       message: '找到匹配记录', 
       data: result.rows[0] 
+    };
+    apiCache.set(cacheKey, {
+      timestamp: Date.now(),
+      data: responseData
     });
+    
+    res.json(responseData);
   } catch (error) {
     console.error('查询错误:', error);
     res.status(500).json({ message: '服务器错误，查询失败' });
   }
 });
 
-// API端点 - 验证答案并获取信息
+// 验证答案并获取信息
 app.post('/api/verify', async (req, res) => {
   try {
     const { id, answer } = req.body;
+    
+    if (!id || !answer) {
+      return res.status(400).json({ message: '请提供验证信息' });
+    }
     
     const query = `
       SELECT name, school, year, destination 
@@ -131,4 +184,3 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`服务器运行在 http://localhost:${port}`);
 });
-    
