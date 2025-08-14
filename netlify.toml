@@ -1,0 +1,25 @@
+[build]
+  command = ""
+  publish = "."
+
+[[plugins]]
+  package = "@neondatabase/netlify-plugin-neon"
+
+[build.environment]
+  # 确保Node.js版本兼容
+  NODE_VERSION = "18"
+
+# 配置HTTP响应头，优化性能和安全
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net;"
+    X-XSS-Protection = "1; mode=block"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
