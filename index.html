@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高中毕业生去向查询</title>
-    <!-- 资源预连接优化 -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     
-    <!-- 关键CSS内联，减少阻塞 -->
     <style>
         .content-auto { content-visibility: auto; }
         #loader { 
@@ -21,13 +18,41 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         #app-container { display: none; }
+        
+        /* 本地图标样式 */
+        .icon {
+            width: 2rem;
+            height: 2rem;
+            fill: currentColor;
+        }
+        
+        /* 页面切换动画样式 */
+        .page-section {
+            transition: all 0.4s ease-in-out;
+            opacity: 0;
+            transform: translateY(20px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+        }
+        
+        .page-section.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            position: relative;
+        }
+        
+        .page-container {
+            position: relative;
+            min-height: 400px; /* 确保动画有足够空间 */
+        }
     </style>
     
-    <!-- 非关键CSS延迟加载 -->
     <link href="https://cdn.tailwindcss.com" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
     
-    <!-- Tailwind配置 -->
     <script>
         tailwind.config = {
             theme: {
@@ -46,7 +71,6 @@
         }
     </script>
     
-    <!-- 工具类样式表延迟加载 -->
     <style type="text/tailwindcss" media="print" onload="this.media='all'">
         @layer utilities {
             .card-shadow {
@@ -59,7 +83,6 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans text-neutral">
-    <!-- 页面加载动画 -->
     <div id="loader">
         <div class="flex flex-col items-center">
             <div class="spinner"></div>
@@ -67,9 +90,8 @@
         </div>
     </div>
 
-    <!-- 主容器 -->
     <div class="container mx-auto px-4 py-8 max-w-4xl" id="app-container">
-        <!-- 头部 -->
+        <!-- 头部 - 所有页面共享 -->
         <header class="text-center mb-12">
             <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-neutral mb-3">
                 高中毕业生去向查询
@@ -79,158 +101,163 @@
             </p>
         </header>
 
-        <!-- 消息提示框 -->
         <div id="message" class="fixed top-4 right-4 p-4 rounded-lg shadow-lg transform transition-all duration-500 translate-x-full z-40 max-w-xs"></div>
 
-        <!-- 主菜单 -->
-        <section id="main-menu" class="text-center mb-16">
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="register-btn">
-                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-pencil text-2xl text-primary"></i>
+        <!-- 页面容器 - 用于动画效果 -->
+        <div class="page-container">
+            <!-- 主菜单页面 -->
+            <section id="main-menu" class="page-section active text-center mb-16">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="register-btn">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="icon text-primary" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold mb-2">我要登记</h2>
+                        <p class="text-gray-600">登记你的毕业信息和去向，设置查询问题</p>
                     </div>
-                    <h2 class="text-xl font-bold mb-2">我要登记</h2>
-                    <p class="text-gray-600">登记你的毕业信息和去向，设置查询问题</p>
-                </div>
-                
-                <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="search-btn">
-                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-search text-2xl text-secondary"></i>
+                    
+                    <div class="bg-white rounded-xl p-8 card-shadow btn-hover cursor-pointer" id="search-btn">
+                        <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="icon text-secondary" viewBox="0 0 24 24">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold mb-2">我要查询</h2>
+                        <p class="text-gray-600">查询已登记的毕业生去向信息</p>
                     </div>
-                    <h2 class="text-xl font-bold mb-2">我要查询</h2>
-                    <p class="text-gray-600">查询已登记的毕业生去向信息</p>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- 登记表单 -->
-        <section id="register-form" class="hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
-            <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息登记</h2>
-            
-            <form id="registration-form">
-                <div class="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
-                        <input type="text" id="name" name="name" required
+            <!-- 登记表单页面 -->
+            <section id="register-form" class="page-section hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
+                <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息登记</h2>
+                
+                <form id="registration-form">
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                        
+                        <div>
+                            <label for="school" class="block text-sm font-medium text-gray-700 mb-1">毕业学校 <span class="text-red-500">*</span></label>
+                            <input type="text" id="school" name="school" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                        
+                        <div>
+                            <label for="year" class="block text-sm font-medium text-gray-700 mb-1">毕业年份 <span class="text-red-500">*</span></label>
+                            <input type="number" id="year" name="year" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                        
+                        <div>
+                            <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">去向 <span class="text-red-500">*</span></label>
+                            <input type="text" id="destination" name="destination" required
+                                placeholder="例如：北京大学 计算机系"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="question" class="block text-sm font-medium text-gray-700 mb-1">查询问题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="question" name="question" required
+                            placeholder="设置一个问题，用于验证查询者身份"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                     
-                    <div>
-                        <label for="school" class="block text-sm font-medium text-gray-700 mb-1">毕业学校 <span class="text-red-500">*</span></label>
-                        <input type="text" id="school" name="school" required
+                    <div class="mb-8">
+                        <label for="answer" class="block text-sm font-medium text-gray-700 mb-1">问题答案 <span class="text-red-500">*</span></label>
+                        <input type="text" id="answer" name="answer" required
+                            placeholder="设置上述问题的答案"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                     
-                    <div>
-                        <label for="year" class="block text-sm font-medium text-gray-700 mb-1">毕业年份 <span class="text-red-500">*</span></label>
-                        <input type="number" id="year" name="year" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    <div class="flex justify-center space-x-4">
+                        <button type="button" id="back-from-register" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                            返回
+                        </button>
+                        <button type="submit" 
+                            class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
+                            提交登记
+                        </button>
                     </div>
-                    
-                    <div>
-                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">去向 <span class="text-red-500">*</span></label>
-                        <input type="text" id="destination" name="destination" required
-                            placeholder="例如：北京大学 计算机系"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <label for="question" class="block text-sm font-medium text-gray-700 mb-1">查询问题 <span class="text-red-500">*</span></label>
-                    <input type="text" id="question" name="question" required
-                        placeholder="设置一个问题，用于验证查询者身份"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                </div>
-                
-                <div class="mb-8">
-                    <label for="answer" class="block text-sm font-medium text-gray-700 mb-1">问题答案 <span class="text-red-500">*</span></label>
-                    <input type="text" id="answer" name="answer" required
-                        placeholder="设置上述问题的答案"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                </div>
-                
-                <div class="flex justify-center space-x-4">
-                    <button type="button" id="back-from-register" 
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
-                        返回
-                    </button>
-                    <button type="submit" 
-                        class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
-                        提交登记
-                    </button>
-                </div>
-            </form>
-        </section>
+                </form>
+            </section>
 
-        <!-- 查询表单 -->
-        <section id="search-form" class="hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
-            <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息查询</h2>
-            
-            <div id="name-search-step">
-                <div class="mb-6">
-                    <label for="search-name" class="block text-sm font-medium text-gray-700 mb-1">请输入要查询的姓名 <span class="text-red-500">*</span></label>
-                    <input type="text" id="search-name" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
-                </div>
+            <!-- 查询表单页面 -->
+            <section id="search-form" class="page-section hidden mb-16 bg-white rounded-xl p-6 md:p-8 card-shadow">
+                <h2 class="text-2xl font-bold mb-6 text-center">毕业生信息查询</h2>
                 
-                <div class="flex justify-center space-x-4">
-                    <button type="button" id="back-from-search" 
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
-                        返回
-                    </button>
-                    <button type="button" id="submit-search" 
-                        class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
-                        查找
-                    </button>
-                </div>
-            </div>
-            
-            <div id="question-step" class="hidden">
-                <div class="mb-6">
-                    <p class="text-sm text-gray-600 mb-3">请回答以下问题以验证身份：</p>
-                    <p id="question-display" class="text-lg font-medium mb-4 p-4 bg-gray-50 rounded-lg"></p>
-                    <input type="text" id="answer-input" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
-                    <input type="hidden" id="graduate-id">
-                </div>
-                
-                <div class="flex justify-center space-x-4">
-                    <button type="button" id="back-to-name-search" 
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
-                        返回
-                    </button>
-                    <button type="button" id="submit-answer" 
-                        class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
-                        提交答案
-                    </button>
-                </div>
-            </div>
-            
-            <div id="result-step" class="hidden">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                    <h3 class="text-xl font-bold text-green-800 mb-4">查询结果</h3>
-                    <div class="space-y-3">
-                        <p><span class="font-medium">姓名：</span> <span id="result-name"></span></p>
-                        <p><span class="font-medium">毕业学校：</span> <span id="result-school"></span></p>
-                        <p><span class="font-medium">毕业年份：</span> <span id="result-year"></span></p>
-                        <p><span class="font-medium">去向：</span> <span id="result-destination"></span></p>
+                <div id="name-search-step">
+                    <div class="mb-6">
+                        <label for="search-name" class="block text-sm font-medium text-gray-700 mb-1">请输入要查询的姓名 <span class="text-red-500">*</span></label>
+                        <input type="text" id="search-name" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button type="button" id="back-from-search" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                            返回
+                        </button>
+                        <button type="button" id="submit-search" 
+                            class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
+                            查找
+                        </button>
                     </div>
                 </div>
                 
-                <div class="flex justify-center">
-                    <button type="button" id="search-another" 
-                        class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
-                        查询其他人
-                    </button>
+                <div id="question-step" class="hidden">
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-600 mb-3">请回答以下问题以验证身份：</p>
+                        <p id="question-display" class="text-lg font-medium mb-4 p-4 bg-gray-50 rounded-lg"></p>
+                        <input type="text" id="answer-input" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all">
+                        <input type="hidden" id="graduate-id">
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button type="button" id="back-to-name-search" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+                            返回
+                        </button>
+                        <button type="button" id="submit-answer" 
+                            class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
+                            提交答案
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </section>
+                
+                <div id="result-step" class="hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">查询结果</h3>
+                        <div class="space-y-3">
+                            <p><span class="font-medium">姓名：</span> <span id="result-name"></span></p>
+                            <p><span class="font-medium">毕业学校：</span> <span id="result-school"></span></p>
+                            <p><span class="font-medium">毕业年份：</span> <span id="result-year"></span></p>
+                            <p><span class="font-medium">去向：</span> <span id="result-destination"></span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button type="button" id="search-another" 
+                            class="px-6 py-2 bg-secondary text-white rounded-lg btn-hover">
+                            查询其他人
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
-    <!-- JavaScript 延迟加载 -->
     <script defer>
         document.addEventListener('DOMContentLoaded', function() {
-            // 快速隐藏加载动画
+            // 隐藏加载动画
             setTimeout(() => {
                 const loader = document.getElementById('loader');
                 loader.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-300');
@@ -238,65 +265,48 @@
                 setTimeout(() => loader.remove(), 300);
             }, 500);
 
+            // 页面切换函数 - 核心功能
+            function navigateTo(pageId) {
+                // 隐藏所有页面
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                // 显示目标页面
+                document.getElementById(pageId).classList.add('active');
+            }
+
             // API基础URL
             const API_BASE_URL = '';
             
-            // DOM元素缓存
-            const elements = {
-                mainMenu: document.getElementById('main-menu'),
-                registerForm: document.getElementById('register-form'),
-                searchForm: document.getElementById('search-form'),
-                messageBox: document.getElementById('message'),
-                registrationForm: document.getElementById('registration-form'),
-                nameSearchStep: document.getElementById('name-search-step'),
-                questionStep: document.getElementById('question-step'),
-                resultStep: document.getElementById('result-step')
-            };
-            
             // 显示消息提示
             function showMessage(text, isError = false) {
-                const msgBox = elements.messageBox;
+                const msgBox = document.getElementById('message');
                 msgBox.textContent = text;
                 msgBox.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg transform transition-all duration-500 z-40 max-w-xs ${isError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`;
                 msgBox.style.transform = 'translateX(0)';
                 setTimeout(() => msgBox.style.transform = 'translateX(calc(100% + 20px))', 3000);
             }
             
-            // 事件监听器
-            const eventListeners = [
-                { element: document.getElementById('register-btn'), type: 'click', handler: () => {
-                    elements.mainMenu.classList.add('hidden');
-                    elements.registerForm.classList.remove('hidden');
-                }},
-                { element: document.getElementById('search-btn'), type: 'click', handler: () => {
-                    elements.mainMenu.classList.add('hidden');
-                    elements.searchForm.classList.remove('hidden');
-                }},
-                { element: document.getElementById('back-from-register'), type: 'click', handler: () => {
-                    elements.registerForm.classList.add('hidden');
-                    elements.mainMenu.classList.remove('hidden');
-                }},
-                { element: document.getElementById('back-from-search'), type: 'click', handler: () => {
-                    elements.searchForm.classList.add('hidden');
-                    elements.mainMenu.classList.remove('hidden');
-                }},
-                { element: document.getElementById('back-to-name-search'), type: 'click', handler: () => {
-                    elements.questionStep.classList.add('hidden');
-                    elements.nameSearchStep.classList.remove('hidden');
-                }},
-                { element: document.getElementById('search-another'), type: 'click', handler: () => {
-                    elements.resultStep.classList.add('hidden');
-                    elements.nameSearchStep.classList.remove('hidden');
-                    document.getElementById('search-name').value = '';
-                }}
-            ];
+            // 事件监听器 - 页面导航
+            document.getElementById('register-btn').addEventListener('click', () => navigateTo('register-form'));
+            document.getElementById('search-btn').addEventListener('click', () => navigateTo('search-form'));
+            document.getElementById('back-from-register').addEventListener('click', () => navigateTo('main-menu'));
+            document.getElementById('back-from-search').addEventListener('click', () => navigateTo('main-menu'));
             
-            eventListeners.forEach(({ element, type, handler }) => {
-                if (element) element.addEventListener(type, handler);
+            // 查询流程导航
+            document.getElementById('back-to-name-search').addEventListener('click', function() {
+                document.getElementById('question-step').classList.add('hidden');
+                document.getElementById('name-search-step').classList.remove('hidden');
+            });
+            
+            document.getElementById('search-another').addEventListener('click', function() {
+                document.getElementById('result-step').classList.add('hidden');
+                document.getElementById('name-search-step').classList.remove('hidden');
+                document.getElementById('search-name').value = '';
             });
             
             // 登记表单提交
-            elements.registrationForm.addEventListener('submit', async function(e) {
+            document.getElementById('registration-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const formData = {
@@ -325,8 +335,7 @@
                     
                     showMessage('登记成功！');
                     this.reset();
-                    elements.registerForm.classList.add('hidden');
-                    elements.mainMenu.classList.remove('hidden');
+                    navigateTo('main-menu'); // 登记成功后返回主菜单
                 } catch (error) {
                     showMessage(error.message || '网络错误，请重试', true);
                 }
@@ -347,8 +356,8 @@
                     
                     document.getElementById('question-display').textContent = result.data.question;
                     document.getElementById('graduate-id').value = result.data.id;
-                    elements.nameSearchStep.classList.add('hidden');
-                    elements.questionStep.classList.remove('hidden');
+                    document.getElementById('name-search-step').classList.add('hidden');
+                    document.getElementById('question-step').classList.remove('hidden');
                 } catch (error) {
                     showMessage(error.message || '网络错误，请重试', true);
                 }
@@ -377,8 +386,8 @@
                     document.getElementById('result-year').textContent = result.data.year;
                     document.getElementById('result-destination').textContent = result.data.destination;
                     
-                    elements.questionStep.classList.add('hidden');
-                    elements.resultStep.classList.remove('hidden');
+                    document.getElementById('question-step').classList.add('hidden');
+                    document.getElementById('result-step').classList.remove('hidden');
                 } catch (error) {
                     showMessage(error.message || '网络错误，请重试', true);
                 }
@@ -387,3 +396,4 @@
     </script>
 </body>
 </html>
+    
