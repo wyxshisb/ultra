@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毕业生追踪系统</title>
+    
+    <!-- 内联关键CSS -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Microsoft YaHei", sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .btn { 
+            padding: 8px 16px; 
+            background: #4299e1; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .toast { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            color: white; 
+            z-index: 100;
+        }
+        .text-red-500 { color: #e53e3e; }
+        .error-text { color: #e53e3e; font-size: 14px; margin-top: 3px; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+    
+    <!-- 预加载非关键CSS -->
+    <link rel="preload" href="css/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/main.css"></noscript>
+    
+    <!-- 国内CDN图标 -->
+    <link rel="stylesheet" href="https://cdn.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 首页 -->
+        <div id="home-page" class="page active">
+            <h1>毕业生追踪系统</h1>
+            <button id="to-register" class="btn"><i class="fa fa-user-plus"></i> 注册毕业生信息</button>
+            <button id="to-search" class="btn"><i class="fa fa-search"></i> 查询毕业生信息</button>
+        </div>
+
+        <!-- 注册页面 -->
+        <div id="register-page" class="page">
+            <h2>注册毕业生信息</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="name">姓名 <span class="text-red-500">*</span></label>
+                    <input type="text" id="name" required
+                           oninput="this.value = this.value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '')">
+                </div>
+
+                <div class="form-group">
+                    <label for="highschool">毕业学校 <span class="text-red-500">*</span></label>
+                    <input type="text" id="highschool" required
+                           oninput="this.value = this.value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, '')">
+                </div>
+
+                <div class="form-group">
+                    <label for="graduation-year">毕业年份 <span class="text-red-500">*</span></label>
+                    <input type="text" id="graduation-year" required
+                           placeholder="请输入4位数字（如2023）" 
+                           maxlength="4"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <p class="error-text" id="graduation-year-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="class-name">班级</label>
+                    <input type="text" id="class-name"
+                           oninput="this.value = this.value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, '')">
+                </div>
+
+                <div class="form-group">
+                    <label for="destination-type">去向类型 <span class="text-red-500">*</span></label>
+                    <select id="destination-type" required>
+                        <option value="">请选择</option>
+                        <option value="college">大学</option>
+                        <option value="work">工作</option>
+                        <option value="abroad">出国</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="destination">具体去向 <span class="text-red-500">*</span></label>
+                    <input type="text" id="destination" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">补充说明</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="security-question">安全问题 <span class="text-red-500">*</span></label>
+                    <input type="text" id="security-question" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="security-answer">安全答案 <span class="text-red-500">*</span></label>
+                    <input type="text" id="security-answer" required>
+                </div>
+
+                <button type="submit" class="btn">保存信息</button>
+                <button type="button" id="back-home1" class="btn">返回首页</button>
+            </form>
+        </div>
+
+        <!-- 查询页面 -->
+        <div id="search-page" class="page">
+            <h2>查询毕业生信息</h2>
+            <form id="search-form">
+                <div class="form-group">
+                    <label for="query-name">姓名</label>
+                    <input type="text" id="query-name"
+                           oninput="this.value = this.value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '')">
+                </div>
+
+                <div class="form-group">
+                    <label for="query-school">毕业学校</label>
+                    <input type="text" id="query-school"
+                           oninput="this.value = this.value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, '')">
+                </div>
+
+                <button type="submit" class="btn">查询</button>
+                <button type="button" id="back-home2" class="btn">返回首页</button>
+            </form>
+
+            <div id="results-container" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
+    
