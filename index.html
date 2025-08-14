@@ -47,9 +47,55 @@
         
         .page-container {
             position: relative;
-            min-height: 400px; /* 确保动画有足够空间 */
+            min-height: 400px;
+        }
+
+        /* 加载错误提示 */
+        #load-error {
+            display: none;
+            text-align: center;
+            padding: 2rem;
         }
     </style>
+    
+    <!-- 添加加载超时检测 -->
+    <script>
+        // 设置最大加载时间（10秒），超时后强制显示页面
+        const MAX_LOAD_TIME = 10000;
+        let loadCompleted = false;
+        
+        setTimeout(() => {
+            if (!loadCompleted) {
+                console.warn('页面加载超时，强制显示内容');
+                completeLoading();
+                
+                // 显示错误提示
+                const errorDiv = document.getElementById('load-error');
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }, MAX_LOAD_TIME);
+        
+        // 加载完成处理函数
+        function completeLoading() {
+            if (loadCompleted) return;
+            
+            loadCompleted = true;
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-300');
+                document.getElementById('app-container').style.display = 'block';
+                
+                // 移除加载动画
+                setTimeout(() => {
+                    if (loader.parentNode) {
+                        loader.parentNode.removeChild(loader);
+                    }
+                }, 300);
+            }
+        }
+    </script>
     
     <link href="https://cdn.tailwindcss.com" rel="stylesheet" media="print" onload="this.media='all'">
     
@@ -83,10 +129,30 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans text-neutral">
+    <!-- 页面加载动画 -->
     <div id="loader">
         <div class="flex flex-col items-center">
             <div class="spinner"></div>
             <p class="mt-4 text-primary font-medium">加载中...</p>
+            <!-- 加载超时提示（默认隐藏） -->
+            <p id="load-progress" class="mt-2 text-sm text-gray-500">请稍候，正在加载资源...</p>
+        </div>
+    </div>
+
+    <!-- 加载错误提示 -->
+    <div id="load-error" class="fixed inset-0 bg-white z-40 flex items-center justify-center p-4">
+        <div class="text-center max-w-md">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="icon text-red-500" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-red-800 mb-2">加载资源时出现问题</h3>
+            <p class="text-gray-600 mb-4">部分资源可能未能正常加载，但您仍可以尝试使用系统功能</p>
+            <button onclick="this.parentElement.style.display='none'" 
+                class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
+                继续使用
+            </button>
         </div>
     </div>
 
@@ -103,7 +169,7 @@
 
         <div id="message" class="fixed top-4 right-4 p-4 rounded-lg shadow-lg transform transition-all duration-500 translate-x-full z-40 max-w-xs"></div>
 
-        <!-- 页面容器 - 用于动画效果 -->
+        <!-- 页面容器 -->
         <div class="page-container">
             <!-- 主菜单页面 -->
             <section id="main-menu" class="page-section active text-center mb-16">
@@ -256,22 +322,31 @@
     </div>
 
     <script defer>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 隐藏加载动画
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-300');
-                document.getElementById('app-container').style.display = 'block';
-                setTimeout(() => loader.remove(), 300);
-            }, 500);
+        // 资源加载状态跟踪
+        const resourceLoadStatus = {
+            tailwind: false,
+            scripts: false,
+            dom: false
+        };
 
-            // 页面切换函数 - 核心功能
+        // 检查所有关键资源是否加载完成
+        function checkAllResourcesLoaded() {
+            const allLoaded = Object.values(resourceLoadStatus).every(status => status);
+            if (allLoaded) {
+                completeLoading(); // 调用全局的加载完成函数
+            }
+        }
+
+        // 监听DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            resourceLoadStatus.dom = true;
+            checkAllResourcesLoaded();
+
+            // 页面切换函数
             function navigateTo(pageId) {
-                // 隐藏所有页面
                 document.querySelectorAll('.page-section').forEach(section => {
                     section.classList.remove('active');
                 });
-                // 显示目标页面
                 document.getElementById(pageId).classList.add('active');
             }
 
@@ -335,7 +410,7 @@
                     
                     showMessage('登记成功！');
                     this.reset();
-                    navigateTo('main-menu'); // 登记成功后返回主菜单
+                    navigateTo('main-menu');
                 } catch (error) {
                     showMessage(error.message || '网络错误，请重试', true);
                 }
@@ -393,6 +468,25 @@
                 }
             });
         });
+
+        // 监听Tailwind CSS加载完成
+        const tailwindLink = document.querySelector('link[href*="tailwindcss.com"]');
+        if (tailwindLink) {
+            tailwindLink.onload = function() {
+                resourceLoadStatus.tailwind = true;
+                checkAllResourcesLoaded();
+            };
+            // 处理加载失败的情况
+            tailwindLink.onerror = function() {
+                console.warn('Tailwind CSS加载失败，使用备用样式');
+                resourceLoadStatus.tailwind = true; // 即使失败也标记为已处理
+                checkAllResourcesLoaded();
+            };
+        }
+
+        // 标记当前脚本加载完成
+        resourceLoadStatus.scripts = true;
+        checkAllResourcesLoaded();
     </script>
 </body>
 </html>
